@@ -1,12 +1,32 @@
-- 👋 Hi, I’m @AnnB6112
-- 👀 I’m interested in ...
-- 🌱 I’m currently learning ...
-- 💞️ I’m looking to collaborate on ...
-- 📫 How to reach me ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
+# MotorPH Payroll Application
 
-<!---
-AnnB6112/AnnB6112 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-You can click the Preview link to take a look at your changes.
---->
+This project ships a Java Swing payroll application with login authentication and employee management.
+
+## Key Features
+- Login gate using authorized accounts from `src/main/resources/authorized_accounts.csv`.
+- Dashboard-style GUI for payroll and employee workflows.
+- Employee management with JTable, row selection, update, delete, and CSV persistence.
+
+## OOP Model (Encapsulation, Abstraction, Inheritance)
+- **Interfaces (contracts):**
+  - `Payables` for salary/deductions/tax computations.
+  - `PayrollCalculations` (compatibility interface that extends `Payables`).
+  - `CrudOperations<T, K>` for CRUD behavior.
+  - `HROperations`, `AdminOperations` for role-specific operations.
+- **Abstract template class:**
+  - `Employee` is now an abstract parent class with encapsulated attributes, constructors, getters/setters, and overridden payroll-calculation methods.
+- **User type classes (inheritance):**
+  - `HREmployee`, `FinanceEmployee`, `ITEmployee`, `AdminEmployee`, `RegularEmployee`, `ContractualEmployee`, `PartTimeEmployee`, and `StaffEmployee` all extend `Employee`.
+  - Role-specific interfaces are implemented where appropriate (`HROperations`, `AdminOperations`).
+
+
+## Layered Architecture
+- `com.mycompany.motorph.dao`: DAO contracts/implementations for CSV data access (`EmployeeDAO`, `CSVEmployeeDAO`).
+- `com.mycompany.motorph.service`: Service layer (`PayrollService`) for business-level operations consumed by the UI.
+- UI classes call the service layer instead of directly calling CSV read/write logic.
+
+## Run
+```bash
+javac -d out $(find src/main/java/com/mycompany/motorph -name "*.java")
+java -cp out:src/main/resources com.mycompany.motorph.MotorPH
+```
