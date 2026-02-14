@@ -5,6 +5,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.io.IOException;
 import java.util.List;
+import com.mycompany.motorph.dao.CSVEmployeeDAO;
+import com.mycompany.motorph.service.PayrollService;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -20,7 +22,7 @@ public class EmployeeManagementFrame extends JFrame {
     private final DefaultTableModel model;
     private final JTable table;
     private List<EmployeeRecord> employees;
-    private final EmployeeCsvRepository repository = new EmployeeCsvRepository();
+    private final PayrollService payrollService = new PayrollService(new CSVEmployeeDAO());
 
     private final JTextField[] fields = new JTextField[19];
     private final JButton viewButton = new JButton("View Employee");
@@ -81,7 +83,7 @@ public class EmployeeManagementFrame extends JFrame {
 
     void refreshTable() {
         try {
-            employees = repository.list();
+            employees = payrollService.getAllEmployees();
             model.setRowCount(0);
             for (EmployeeRecord e : employees) {
                 model.addRow(new Object[]{e.employeeNumber, e.lastName, e.firstName, e.sssNumber, e.philHealthNumber, e.tinNumber, e.pagIbigNumber});
@@ -178,15 +180,15 @@ public class EmployeeManagementFrame extends JFrame {
         int row = table.getSelectedRow();
         if (row < 0) return;
 
+        EmployeeRecord previous = employees.get(row);
         EmployeeRecord updated = buildFromFields();
         if (updated.employeeNumber.isBlank() || updated.lastName.isBlank() || updated.firstName.isBlank()) {
             JOptionPane.showMessageDialog(this, "Employee Number, Last Name, and First Name are required.");
             return;
         }
 
-        employees.set(row, updated);
         try {
-            repository.saveAll(employees);
+            payrollService.updateEmployee(previous.employeeNumber, updated);
             refreshTable();
             JOptionPane.showMessageDialog(this, "Employee updated successfully.");
         } catch (IOException ex) {
@@ -203,9 +205,9 @@ public class EmployeeManagementFrame extends JFrame {
             return;
         }
 
-        employees.remove(row);
+        String employeeNumber = employees.get(row).employeeNumber;
         try {
-            repository.saveAll(employees);
+            payrollService.deleteEmployee(employeeNumber);
             refreshTable();
             JOptionPane.showMessageDialog(this, "Employee deleted successfully.");
         } catch (IOException ex) {
@@ -252,7 +254,7 @@ public class EmployeeManagementFrame extends JFrame {
         }
 
         try {
-            repository.append(r);
+            payrollService.addEmployee(r);
             refreshTable();
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Failed to append employee: " + ex.getMessage());

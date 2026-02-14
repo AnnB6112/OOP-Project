@@ -19,8 +19,14 @@ This project ships a Java Swing payroll application with login authentication an
   - `HREmployee`, `FinanceEmployee`, `ITEmployee`, `AdminEmployee`, `RegularEmployee`, `ContractualEmployee`, `PartTimeEmployee`, and `StaffEmployee` all extend `Employee`.
   - Role-specific interfaces are implemented where appropriate (`HROperations`, `AdminOperations`).
 
+
+## Layered Architecture
+- `com.mycompany.motorph.dao`: DAO contracts/implementations for CSV data access (`EmployeeDAO`, `CSVEmployeeDAO`).
+- `com.mycompany.motorph.service`: Service layer (`PayrollService`) for business-level operations consumed by the UI.
+- UI classes call the service layer instead of directly calling CSV read/write logic.
+
 ## Run
 ```bash
-javac -d out src/main/java/com/mycompany/motorph/*.java
+javac -d out $(find src/main/java/com/mycompany/motorph -name "*.java")
 java -cp out:src/main/resources com.mycompany.motorph.MotorPH
 ```

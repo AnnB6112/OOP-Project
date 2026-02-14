@@ -1,27 +1,27 @@
 package com.mycompany.motorph;
 
 public class EmployeeRecord {
-    String employeeNumber;
-    String lastName;
-    String firstName;
-    String birthday;
-    String address;
-    String phoneNumber;
-    String sssNumber;
-    String philHealthNumber;
-    String tinNumber;
-    String pagIbigNumber;
-    String status;
-    String position;
-    String supervisor;
-    String basicSalary;
-    String riceSubsidy;
-    String phoneAllowance;
-    String clothingAllowance;
-    String grossSemiMonthly;
-    String hourlyRate;
+    public String employeeNumber;
+    public String lastName;
+    public String firstName;
+    public String birthday;
+    public String address;
+    public String phoneNumber;
+    public String sssNumber;
+    public String philHealthNumber;
+    public String tinNumber;
+    public String pagIbigNumber;
+    public String status;
+    public String position;
+    public String supervisor;
+    public String basicSalary;
+    public String riceSubsidy;
+    public String phoneAllowance;
+    public String clothingAllowance;
+    public String grossSemiMonthly;
+    public String hourlyRate;
 
-    static EmployeeRecord fromCsvRow(String[] row) {
+    public static EmployeeRecord fromCsvRow(String[] row) {
         EmployeeRecord r = new EmployeeRecord();
         r.employeeNumber = row[0].trim();
         r.lastName = row[1].trim();
@@ -45,7 +45,7 @@ public class EmployeeRecord {
         return r;
     }
 
-    String[] toCsvRow() {
+    public String[] toCsvRow() {
         return new String[]{employeeNumber,lastName,firstName,birthday,address,phoneNumber,sssNumber,philHealthNumber,
             tinNumber,pagIbigNumber,status,position,supervisor,basicSalary,riceSubsidy,phoneAllowance,
             clothingAllowance,grossSemiMonthly,hourlyRate};
