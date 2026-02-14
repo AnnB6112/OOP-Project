@@ -9,7 +9,28 @@ import java.util.Map;
 
 public class AccountAuthService {
     private static final String ACCOUNTS_CSV = "/authorized_accounts.csv";
-    private final Map<String, String> authorizedAccounts = new HashMap<>();
+
+    public static class AuthResult {
+        public final boolean authenticated;
+        public final String role;
+
+        public AuthResult(boolean authenticated, String role) {
+            this.authenticated = authenticated;
+            this.role = role;
+        }
+    }
+
+    private static class AccountInfo {
+        String password;
+        String role;
+
+        AccountInfo(String password, String role) {
+            this.password = password;
+            this.role = role;
+        }
+    }
+
+    private final Map<String, AccountInfo> authorizedAccounts = new HashMap<>();
 
     public AccountAuthService() {
         loadAccounts();
@@ -22,12 +43,16 @@ public class AccountAuthService {
             }
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-                String line = br.readLine(); // header
+                br.readLine(); // header
+                String line;
                 while ((line = br.readLine()) != null) {
                     if (line.trim().isEmpty()) continue;
                     String[] parts = line.split(",", -1);
                     if (parts.length < 2) continue;
-                    authorizedAccounts.put(parts[0].trim(), parts[1].trim());
+                    String username = parts[0].trim();
+                    String password = parts[1].trim();
+                    String role = parts.length >= 3 ? parts[2].trim() : "EMPLOYEE";
+                    authorizedAccounts.put(username, new AccountInfo(password, role));
                 }
             }
         } catch (IOException ex) {
@@ -36,8 +61,15 @@ public class AccountAuthService {
     }
 
     public boolean validateCredentials(String username, String password) {
-        if (username == null || password == null) return false;
-        String storedPassword = authorizedAccounts.get(username.trim());
-        return storedPassword != null && storedPassword.equals(password);
+        return authenticate(username, password).authenticated;
+    }
+
+    public AuthResult authenticate(String username, String password) {
+        if (username == null || password == null) return new AuthResult(false, "");
+        AccountInfo info = authorizedAccounts.get(username.trim());
+        if (info != null && info.password.equals(password)) {
+            return new AuthResult(true, info.role);
+        }
+        return new AuthResult(false, "");
     }
 }

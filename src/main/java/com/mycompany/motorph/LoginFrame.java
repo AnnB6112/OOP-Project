@@ -44,9 +44,15 @@ public class LoginFrame extends JFrame {
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword());
 
-        if (authService.validateCredentials(username, password)) {
-            EmployeePayrollGUI app = new EmployeePayrollGUI();
-            app.setVisible(true);
+        AccountAuthService.AuthResult result = authService.authenticate(username, password);
+        if (result.authenticated) {
+            if ("ADMIN".equalsIgnoreCase(result.role)) {
+                LeaveApprovalFrame adminFrame = new LeaveApprovalFrame();
+                adminFrame.setVisible(true);
+            } else {
+                EmployeePayrollGUI app = new EmployeePayrollGUI();
+                app.setVisible(true);
+            }
             dispose();
             return;
         }
