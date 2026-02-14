@@ -77,6 +77,16 @@ public class MotorPH {
         double hourlyRate = parseMoney(data[18]);
 
         String positionLower = position.toLowerCase();
+        String statusLower = status.toLowerCase();
+
+        if (statusLower.contains("part-time") || statusLower.contains("part time")) {
+            return new PartTimeEmployee(empNumber, name, birthday, status, address, phone, position, supervisor,
+                hourlyRate, basicSalary, riceSubsidy, phoneAllowance, clothingAllowance);
+        }
+        if (statusLower.contains("contract") || statusLower.contains("probation")) {
+            return new ContractualEmployee(empNumber, name, birthday, status, address, phone, position, supervisor,
+                hourlyRate, basicSalary, riceSubsidy, phoneAllowance, clothingAllowance);
+        }
         if (positionLower.contains("hr")) {
             return new HREmployee(empNumber, name, birthday, status, address, phone, position, supervisor,
                 hourlyRate, basicSalary, riceSubsidy, phoneAllowance, clothingAllowance);
@@ -93,7 +103,7 @@ public class MotorPH {
             return new AdminEmployee(empNumber, name, birthday, status, address, phone, position, supervisor,
                 hourlyRate, basicSalary, riceSubsidy, phoneAllowance, clothingAllowance);
         }
-        return new StaffEmployee(empNumber, name, birthday, status, address, phone, position, supervisor,
+        return new RegularEmployee(empNumber, name, birthday, status, address, phone, position, supervisor,
             hourlyRate, basicSalary, riceSubsidy, phoneAllowance, clothingAllowance);
     }
 

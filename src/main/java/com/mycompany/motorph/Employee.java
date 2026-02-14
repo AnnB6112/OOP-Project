@@ -4,20 +4,20 @@ import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 
-public abstract class Employee implements PayrollCalculations {
-    private int empNumber;
-    private String name;
-    private String birthday;
-    private String status;
-    private String address;
-    private String phoneNumber;
-    private String position;
-    private String supervisor;
-    private double hourlyRate;
-    private double basicSalary;
-    private double riceSubsidy;
-    private double phoneAllowance;
-    private double clothingAllowance;
+public abstract class Employee implements Payables {
+    protected int empNumber;
+    protected String name;
+    protected String birthday;
+    protected String status;
+    protected String address;
+    protected String phoneNumber;
+    protected String position;
+    protected String supervisor;
+    protected double hourlyRate;
+    protected double basicSalary;
+    protected double riceSubsidy;
+    protected double phoneAllowance;
+    protected double clothingAllowance;
 
     public Employee(int empNumber, String name, String birthday, String status,
                String address, String phoneNumber, String position,
@@ -69,7 +69,7 @@ public abstract class Employee implements PayrollCalculations {
     public void setPhoneAllowance(double phoneAllowance) { this.phoneAllowance = phoneAllowance; }
     public void setClothingAllowance(double clothingAllowance) { this.clothingAllowance = clothingAllowance; }
 
-    private String getCurrentPayPeriod() {
+    protected String getCurrentPayPeriod() {
         LocalDate today = LocalDate.now();
         int year = today.getYear();
         int month = today.getMonthValue();
@@ -121,7 +121,7 @@ public abstract class Employee implements PayrollCalculations {
         return calculateSSS() + calculatePhilhealth() + calculatePagibig();
     }
 
-    private static final double TAX_FREE = 20833;
+    protected static final double TAX_FREE = 20833;
 
     @Override
     public double calculateTax(double monthlyGross) {

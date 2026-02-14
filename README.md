@@ -9,13 +9,14 @@ This project ships a Java Swing payroll application with login authentication an
 
 ## OOP Model (Encapsulation, Abstraction, Inheritance)
 - **Interfaces (contracts):**
-  - `PayrollCalculations` for salary/deductions/tax computations.
+  - `Payables` for salary/deductions/tax computations.
+  - `PayrollCalculations` (compatibility interface that extends `Payables`).
   - `CrudOperations<T, K>` for CRUD behavior.
   - `HROperations`, `AdminOperations` for role-specific operations.
 - **Abstract template class:**
   - `Employee` is now an abstract parent class with encapsulated attributes, constructors, getters/setters, and overridden payroll-calculation methods.
 - **User type classes (inheritance):**
-  - `HREmployee`, `FinanceEmployee`, `ITEmployee`, `AdminEmployee`, `StaffEmployee` all extend `Employee`.
+  - `HREmployee`, `FinanceEmployee`, `ITEmployee`, `AdminEmployee`, `RegularEmployee`, `ContractualEmployee`, `PartTimeEmployee`, and `StaffEmployee` all extend `Employee`.
   - Role-specific interfaces are implemented where appropriate (`HROperations`, `AdminOperations`).
 
 ## Run
