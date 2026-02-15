@@ -30,3 +30,6 @@ This project ships a Java Swing payroll application with login authentication an
 javac -d out $(find src/main/java/com/mycompany/motorph -name "*.java")
 java -cp out:src/main/resources com.mycompany.motorph.MotorPH
 ```
+
+## ERD
+- See `docs/erd.md` for the normalized relational data model based on the provided ERD diagram.
