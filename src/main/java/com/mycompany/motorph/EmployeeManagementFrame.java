@@ -42,13 +42,21 @@ public class EmployeeManagementFrame extends JFrame {
 
     private final JTextArea detailsArea = new JTextArea();
 
+    private final JButton viewButton = new JButton("View Employee");
+    private final JButton newEmployeeButton = new JButton("New Employee");
     private final JButton updateButton = new JButton("Update");
     private final JButton deleteButton = new JButton("Delete");
     private final JButton computeSalaryButton = new JButton("Compute Salary");
     private final JButton leaveRequestButton = new JButton("Leave Request");
+    private final boolean adminMode;
 
     public EmployeeManagementFrame() {
+        this(false);
+    }
+
+    public EmployeeManagementFrame(boolean adminMode) {
         super("MotorPH Employee Management");
+        this.adminMode = adminMode;
         setSize(1280, 700);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
@@ -126,7 +134,7 @@ public class EmployeeManagementFrame extends JFrame {
         detailsArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         panel.add(new JScrollPane(detailsArea), BorderLayout.CENTER);
 
-        JPanel actions = new JPanel(new GridLayout(2, 2, 8, 8));
+        JPanel actions = new JPanel(new GridLayout(3, 2, 8, 8));
         updateButton.setBackground(new Color(56, 132, 255));
         updateButton.setForeground(Color.WHITE);
 
@@ -139,11 +147,21 @@ public class EmployeeManagementFrame extends JFrame {
         leaveRequestButton.setBackground(new Color(120, 92, 245));
         leaveRequestButton.setForeground(Color.WHITE);
 
+        viewButton.setBackground(new Color(108, 117, 125));
+        viewButton.setForeground(Color.WHITE);
+
+        newEmployeeButton.setBackground(new Color(13, 110, 253));
+        newEmployeeButton.setForeground(Color.WHITE);
+
+        actions.add(viewButton);
+        actions.add(newEmployeeButton);
         actions.add(updateButton);
         actions.add(deleteButton);
         actions.add(computeSalaryButton);
         actions.add(leaveRequestButton);
 
+        viewButton.addActionListener(e -> viewSelectedEmployee());
+        newEmployeeButton.addActionListener(e -> openAddDialog());
         updateButton.addActionListener(e -> openUpdateDialog());
         deleteButton.addActionListener(e -> deleteSelected());
         computeSalaryButton.addActionListener(e -> openComputeSalary());
@@ -159,11 +177,13 @@ public class EmployeeManagementFrame extends JFrame {
         return panel;
     }
 
-    private void setActionsEnabled(boolean enabled) {
-        updateButton.setEnabled(enabled);
-        deleteButton.setEnabled(enabled);
-        computeSalaryButton.setEnabled(enabled);
-        leaveRequestButton.setEnabled(enabled);
+    private void setActionsEnabled(boolean selected) {
+        viewButton.setEnabled(selected);
+        newEmployeeButton.setEnabled(adminMode);
+        updateButton.setEnabled(selected && adminMode);
+        deleteButton.setEnabled(selected && adminMode);
+        computeSalaryButton.setEnabled(selected);
+        leaveRequestButton.setEnabled(selected);
     }
 
     private void refreshTable() {
@@ -264,6 +284,71 @@ public class EmployeeManagementFrame extends JFrame {
         setActionsEnabled(true);
     }
 
+    private void viewSelectedEmployee() {
+        EmployeeRecord selected = getSelectedRecord();
+        if (selected == null) {
+            JOptionPane.showMessageDialog(this, "Please select an employee first.");
+            return;
+        }
+
+        JOptionPane.showMessageDialog(this, detailsArea.getText(), "Employee Details", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void openAddDialog() {
+        if (!adminMode) {
+            JOptionPane.showMessageDialog(this, "Only admin can add employee records.", "Access Denied", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        JPanel panel = new JPanel(new GridLayout(0, 2, 8, 8));
+        JTextField[] formFields = new JTextField[19];
+        String[] labels = {"Employee Number","Last Name","First Name","Birthday","Address","Phone Number","SSS #","PhilHealth #","TIN #","Pag-IBIG #","Status","Position","Immediate Supervisor","Basic Salary","Rice Subsidy","Phone Allowance","Clothing Allowance","Gross Semi-monthly Rate","Hourly Rate"};
+
+        for (int i = 0; i < labels.length; i++) {
+            formFields[i] = new JTextField();
+            panel.add(new JLabel(labels[i]));
+            panel.add(formFields[i]);
+        }
+
+        int result = JOptionPane.showConfirmDialog(this, panel, "New Employee", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (result != JOptionPane.OK_OPTION) return;
+
+        EmployeeRecord created = new EmployeeRecord();
+        created.employeeNumber = formFields[0].getText().trim();
+        created.lastName = formFields[1].getText().trim();
+        created.firstName = formFields[2].getText().trim();
+        created.birthday = formFields[3].getText().trim();
+        created.address = formFields[4].getText().trim();
+        created.phoneNumber = formFields[5].getText().trim();
+        created.sssNumber = formFields[6].getText().trim();
+        created.philHealthNumber = formFields[7].getText().trim();
+        created.tinNumber = formFields[8].getText().trim();
+        created.pagIbigNumber = formFields[9].getText().trim();
+        created.status = formFields[10].getText().trim();
+        created.position = formFields[11].getText().trim();
+        created.supervisor = formFields[12].getText().trim();
+        created.basicSalary = formFields[13].getText().trim();
+        created.riceSubsidy = formFields[14].getText().trim();
+        created.phoneAllowance = formFields[15].getText().trim();
+        created.clothingAllowance = formFields[16].getText().trim();
+        created.grossSemiMonthly = formFields[17].getText().trim();
+        created.hourlyRate = formFields[18].getText().trim();
+
+        if (created.employeeNumber.isBlank() || created.lastName.isBlank() || created.firstName.isBlank()) {
+            JOptionPane.showMessageDialog(this, "Employee Number, Last Name, and First Name are required.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            payrollService.addEmployee(created);
+            refreshTable();
+            applyFilters();
+            JOptionPane.showMessageDialog(this, "Employee added successfully.");
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Failed to add employee: " + ex.getMessage());
+        }
+    }
+
     private void openComputeSalary() {
         EmployeeRecord selected = getSelectedRecord();
         if (selected == null) return;
@@ -277,6 +362,11 @@ public class EmployeeManagementFrame extends JFrame {
     }
 
     private void openUpdateDialog() {
+        if (!adminMode) {
+            JOptionPane.showMessageDialog(this, "Only admin can update employee records.", "Access Denied", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         EmployeeRecord selected = getSelectedRecord();
         if (selected == null) return;
 
@@ -326,6 +416,11 @@ public class EmployeeManagementFrame extends JFrame {
     }
 
     private void deleteSelected() {
+        if (!adminMode) {
+            JOptionPane.showMessageDialog(this, "Only admin can delete employee records.", "Access Denied", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         EmployeeRecord selected = getSelectedRecord();
         if (selected == null) return;
 

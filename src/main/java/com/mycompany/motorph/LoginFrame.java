@@ -47,7 +47,7 @@ public class LoginFrame extends JFrame {
         AccountAuthService.AuthResult result = authService.authenticate(username, password);
         if (result.authenticated) {
             if ("ADMIN".equalsIgnoreCase(result.role)) {
-                LeaveApprovalFrame adminFrame = new LeaveApprovalFrame();
+                EmployeeManagementFrame adminFrame = new EmployeeManagementFrame(true);
                 adminFrame.setVisible(true);
             } else {
                 EmployeePayrollGUI app = new EmployeePayrollGUI();
