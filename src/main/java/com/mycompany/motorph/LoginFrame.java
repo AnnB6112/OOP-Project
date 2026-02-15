@@ -53,6 +53,9 @@ public class LoginFrame extends JFrame {
                 EmployeePayrollGUI app = new EmployeePayrollGUI();
                 app.setVisible(true);
             }
+        if (authService.validateCredentials(username, password)) {
+            EmployeePayrollGUI app = new EmployeePayrollGUI();
+            app.setVisible(true);
             dispose();
             return;
         }
