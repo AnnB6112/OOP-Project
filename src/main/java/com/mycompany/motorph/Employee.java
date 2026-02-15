@@ -147,43 +147,67 @@ public abstract class Employee implements Payables {
 
     public void printPayrollSummary(PrintWriter out, int weekNumber, double regularHours, double overtimeHours, double lateMinutes) {
         DecimalFormat df = new DecimalFormat("#,##0.00");
+        double dailyRate = hourlyRate * 8;
         double monthlyGross = basicSalary + riceSubsidy + phoneAllowance + clothingAllowance;
         double weeklyGross = calculateGrossSalary(regularHours, overtimeHours);
         double weeklyTax = calculateTax(monthlyGross) / 4;
-        double weeklyDeductions = (weekNumber == 4) ? calculateDeductions() / 4 : 0;
+        double sss = calculateSSS() / 4;
+        double philhealth = calculatePhilhealth() / 4;
+        double pagibig = calculatePagibig() / 4;
         double lateDeduction = Math.max(0, lateMinutes - 10) * hourlyRate / 60;
-        double netPay = weeklyGross - weeklyTax - weeklyDeductions - lateDeduction;
+        double totalBenefits = (riceSubsidy + phoneAllowance + clothingAllowance) / 4;
+        double totalDeductions = weeklyTax + sss + philhealth + pagibig + lateDeduction;
+        double netPay = weeklyGross + totalBenefits - totalDeductions;
 
-        out.println("\n=====================================");
-        out.println("          PAYROLL SUMMARY (Week " + weekNumber + ")");
-        out.println("=====================================");
-        out.println("Pay Period: " + getCurrentPayPeriod());
-        out.println("User Type: " + getUserType());
-        out.println("-------------------------------------");
-        out.println("ALLOWANCES (Weekly):");
-        out.println("  Rice Subsidy: " + df.format(riceSubsidy / 4));
-        out.println("  Phone Allowance: " + df.format(phoneAllowance / 4));
-        out.println("  Clothing Allowance: " + df.format(clothingAllowance / 4));
-        out.println("-------------------------------------");
-        out.println("WEEKLY CALCULATION:");
-        out.println("  Regular Hours: " + regularHours + " @ " + df.format(hourlyRate) + "/hr");
-        out.println("  Overtime Hours: " + overtimeHours + " @ " + df.format(hourlyRate * 1.25) + "/hr");
-        out.println("  Late Minutes: " + lateMinutes + " (after 10min grace)");
-        out.println("  -------------------------------------");
-        out.println("  Weekly Gross Pay: " + df.format(weeklyGross));
-        out.println("-------------------------------------");
-        out.println("DEDUCTIONS:");
-        out.println("  Tax: " + df.format(weeklyTax));
-        if (weekNumber == 4) {
-            out.println("  SSS: " + df.format(calculateSSS() / 4));
-            out.println("  PhilHealth: " + df.format(calculatePhilhealth() / 4));
-            out.println("  Pag-IBIG: " + df.format(calculatePagibig() / 4));
-        }
-        out.println("  Late Deduction: " + df.format(lateDeduction));
-        out.println("  -------------------------------------");
-        out.println("  Total Deductions: " + df.format(weeklyTax + weeklyDeductions + lateDeduction));
-        out.println("-------------------------------------");
-        out.println("NET PAY: " + df.format(netPay));
-        out.println("=====================================");
+        LocalDate today = LocalDate.now();
+        LocalDate startDate = today.minusDays(13);
+        String payrollDate = today.toString();
+
+        out.println("MotorPH");
+        out.println("7 Jupiter Avenue near J. Sanov Dr., Bagong Nayon, Quezon City");
+        out.println("Phone: (028) 911-5073 | Email: corpcom@motorph.com");
+        out.println("====================================================================");
+        out.println("                           EMPLOYEE PAYSLIP");
+        out.println("====================================================================");
+        out.printf("%-22s: %-20s %-22s: %s%n", "PAYSLIP NO", "PS-" + empNumber + "-W" + weekNumber, "PAYROLL START DATE", startDate);
+        out.printf("%-22s: %-20s %-22s: %s%n", "EMPLOYEE ID", empNumber, "PERIOD END DATE", today);
+        out.printf("%-22s: %-20s %-22s: %s%n", "EMPLOYEE NAME", name, "PAYROLL DATE", payrollDate);
+        out.printf("%-22s: %-20s %-22s: %s%n", "POSITION", position, "EMPLOYMENT", status);
+        out.println();
+
+        out.println("EARNINGS");
+        out.println("--------------------------------------------------------------------");
+        out.printf("%-42s %15s%n", "Monthly Salary", "₱" + df.format(basicSalary));
+        out.printf("%-42s %15s%n", "Daily Rate", "₱" + df.format(dailyRate));
+        out.printf("%-42s %15s%n", "Days Worked", df.format(regularHours / 8));
+        out.printf("%-42s %15s%n", "Overtime", df.format(overtimeHours));
+        out.printf("%-42s %15s%n", "GROSS INCOME", "₱" + df.format(weeklyGross));
+        out.println();
+
+        out.println("BENEFITS");
+        out.println("--------------------------------------------------------------------");
+        out.printf("%-42s %15s%n", "Rice Subsidy", "₱" + df.format(riceSubsidy / 4));
+        out.printf("%-42s %15s%n", "Phone Allowance", "₱" + df.format(phoneAllowance / 4));
+        out.printf("%-42s %15s%n", "Clothing Allowance", "₱" + df.format(clothingAllowance / 4));
+        out.printf("%-42s %15s%n", "TOTAL", "₱" + df.format(totalBenefits));
+        out.println();
+
+        out.println("DEDUCTIONS");
+        out.println("--------------------------------------------------------------------");
+        out.printf("%-42s %15s%n", "Social Security System", "₱" + df.format(sss));
+        out.printf("%-42s %15s%n", "PhilHealth", "₱" + df.format(philhealth));
+        out.printf("%-42s %15s%n", "Pag-IBIG", "₱" + df.format(pagibig));
+        out.printf("%-42s %15s%n", "Withholding Tax", "₱" + df.format(weeklyTax));
+        out.printf("%-42s %15s%n", "Late Deduction", "₱" + df.format(lateDeduction));
+        out.printf("%-42s %15s%n", "TOTAL DEDUCTIONS", "₱" + df.format(totalDeductions));
+        out.println();
+
+        out.println("SUMMARY");
+        out.println("--------------------------------------------------------------------");
+        out.printf("%-42s %15s%n", "Gross Income", "₱" + df.format(weeklyGross));
+        out.printf("%-42s %15s%n", "Benefits", "₱" + df.format(totalBenefits));
+        out.printf("%-42s %15s%n", "Deductions", "₱" + df.format(totalDeductions));
+        out.printf("%-42s %15s%n", "TAKE HOME PAY", "₱" + df.format(netPay));
+        out.println("====================================================================");
     }
 }
