@@ -149,9 +149,9 @@ public abstract class Employee implements Payables {
         DecimalFormat df = new DecimalFormat("#,##0.00");
         double dailyRate = hourlyRate * 8;
         double monthlyGross = basicSalary + riceSubsidy + phoneAllowance + clothingAllowance;
-        double weeklyGross = calculateGrossSalary(regularHours, overtimeHours);
-        double totalBenefits = (riceSubsidy + phoneAllowance + clothingAllowance) / 4;
-        double weeklyGrossWithBenefits = weeklyGross + totalBenefits;
+        double weeklyBaseGross = calculateGrossSalary(regularHours, overtimeHours);
+        double weeklyBenefits = (riceSubsidy + phoneAllowance + clothingAllowance) / 4;
+        double weeklyGrossWithBenefits = weeklyBaseGross + weeklyBenefits;
         double weeklyTax = calculateTax(monthlyGross) / 4;
         double sss = calculateSSS() / 4;
         double philhealth = calculatePhilhealth() / 4;
@@ -190,7 +190,7 @@ public abstract class Employee implements Payables {
         out.printf("%-42s %15s%n", "Rice Subsidy", "₱" + df.format(riceSubsidy / 4));
         out.printf("%-42s %15s%n", "Phone Allowance", "₱" + df.format(phoneAllowance / 4));
         out.printf("%-42s %15s%n", "Clothing Allowance", "₱" + df.format(clothingAllowance / 4));
-        out.printf("%-42s %15s%n", "TOTAL", "₱" + df.format(totalBenefits));
+        out.printf("%-42s %15s%n", "TOTAL", "₱" + df.format(weeklyBenefits));
         out.println();
 
         out.println("DEDUCTIONS");
@@ -206,18 +206,13 @@ public abstract class Employee implements Payables {
         out.println("SUMMARY");
         out.println("--------------------------------------------------------------------");
         out.printf("%-42s %15s%n", "Gross Income", "₱" + df.format(weeklyGrossWithBenefits));
-        out.printf("%-42s %15s%n", "Benefits", "₱" + df.format(totalBenefits));
+        out.printf("%-42s %15s%n", "Benefits", "₱" + df.format(weeklyBenefits));
         out.printf("%-42s %15s%n", "Deductions", "₱" + df.format(totalDeductions));
         out.printf("%-42s %15s%n", "TAKE HOME PAY", "₱" + df.format(netPay));
         out.println("====================================================================");
-        double monthlyGross = basicSalary + riceSubsidy + phoneAllowance + clothingAllowance;
-        double weeklyGross = calculateGrossSalary(regularHours, overtimeHours);
-        double weeklyBenefits = (riceSubsidy + phoneAllowance + clothingAllowance) / 4;
-        double weeklyGrossWithBenefits = weeklyGross + weeklyBenefits;
-        double weeklyTax = calculateTax(monthlyGross) / 4;
-        double weeklyDeductions = (weekNumber == 4) ? calculateDeductions() / 4 : 0;
-        double lateDeduction = Math.max(0, lateMinutes - 10) * hourlyRate / 60;
-        double netPay = weeklyGrossWithBenefits - weeklyTax - weeklyDeductions - lateDeduction;
+
+        double conditionalGovernmentDeductions = (weekNumber == 4) ? calculateDeductions() / 4 : 0;
+        double conditionalNetPay = weeklyGrossWithBenefits - weeklyTax - conditionalGovernmentDeductions - lateDeduction;
 
         out.println("\n=====================================");
         out.println("          PAYROLL SUMMARY (Week " + weekNumber + ")");
@@ -246,9 +241,10 @@ public abstract class Employee implements Payables {
         }
         out.println("  Late Deduction: " + df.format(lateDeduction));
         out.println("  -------------------------------------");
-        out.println("  Total Deductions: " + df.format(weeklyTax + weeklyDeductions + lateDeduction));
+        out.println("  Total Deductions: " + df.format(weeklyTax + conditionalGovernmentDeductions + lateDeduction));
         out.println("-------------------------------------");
-        out.println("NET PAY: " + df.format(netPay));
+        out.println("NET PAY: " + df.format(conditionalNetPay));
         out.println("=====================================");
     }
+
 }
