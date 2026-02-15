@@ -642,11 +642,16 @@ public class EmployeePayrollGUI extends JFrame {
             calculator.loadAttendanceData("/motorph_attendance_records.csv");
 
             LocalDate now = LocalDate.now();
-            AttendanceCalculator.AttendanceReport report = calculator.generateReport(employee.getEmpNumber(), now.getYear(), now.getMonthValue());
+            AttendanceCalculator.AttendanceReport report = calculator.generateWeeklyReport(
+                employee.getEmpNumber(),
+                now.getYear(),
+                now.getMonthValue(),
+                week
+            );
 
-            double regularHours = report != null ? Math.min(report.getTotalWorkedHours() / 4, 40) : 40;
-            double overtimeHours = report != null ? Math.max(0, report.getTotalWorkedHours() / 4 - 40) : 0;
-            double lateMinutes = report != null ? (report.getLateHours() * 60) / 4 : 0;
+            double regularHours = report != null ? report.getWorkingDays() * 7 : 0;
+            double overtimeHours = report != null ? report.getOvertimeHours() : 0;
+            double lateMinutes = report != null ? report.getLateHours() * 60 : 0;
 
             StringWriter writer = new StringWriter();
             PrintWriter out = new PrintWriter(writer);

@@ -78,7 +78,25 @@ public class CSVEmployeeDAO implements EmployeeDAO {
     }
 
     private String[] splitCsv(String line) {
-        return line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+        String[] rawFields = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+        String[] fields = new String[rawFields.length];
+        for (int i = 0; i < rawFields.length; i++) {
+            fields[i] = unquoteCsvField(rawFields[i]);
+        }
+        return fields;
+    }
+
+    private String unquoteCsvField(String field) {
+        if (field == null) {
+            return "";
+        }
+
+        String trimmed = field.trim();
+        if (trimmed.length() >= 2 && trimmed.startsWith("\"") && trimmed.endsWith("\"")) {
+            String inner = trimmed.substring(1, trimmed.length() - 1);
+            return inner.replace("\"\"", "\"");
+        }
+        return trimmed;
     }
 
     private String joinCsv(String[] fields) {

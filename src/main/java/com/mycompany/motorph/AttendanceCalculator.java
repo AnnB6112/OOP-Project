@@ -10,11 +10,13 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
+import java.time.temporal.WeekFields;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 public class AttendanceCalculator {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
@@ -65,6 +67,18 @@ public class AttendanceCalculator {
             return null;
         }
         return attendance.generateReport(year, month);
+    }
+
+    public AttendanceReport generateWeeklyReport(int employeeNumber, int year, int month, int weekNumber) {
+        if (weekNumber < 1 || weekNumber > 4) {
+            throw new IllegalArgumentException("Week number must be 1 to 4.");
+        }
+
+        EmployeeAttendance attendance = employeeAttendanceMap.get(employeeNumber);
+        if (attendance == null) {
+            return null;
+        }
+        return attendance.generateWeeklyReport(year, month, weekNumber);
     }
 
     public String generateTimecard(Employee employee, int year, int month) {
@@ -173,6 +187,52 @@ public class AttendanceCalculator {
             return new AttendanceReport(year, month, workingDays, totalLateHours,
                 totalEarlyDepartureHours, totalShortHours,
                 totalOvertimeHours);
+        }
+
+        public AttendanceReport generateWeeklyReport(int year, int month, int weekNumber) {
+            double totalLateHours = 0;
+            double totalEarlyDepartureHours = 0;
+            double totalShortHours = 0;
+            double totalOvertimeHours = 0;
+            int workingDays = 0;
+
+            WeekFields weekFields = WeekFields.of(Locale.getDefault());
+
+            for (AttendanceRecord record : records) {
+                LocalDate date = record.getDate();
+                if (date.getYear() != year || date.getMonthValue() != month) {
+                    continue;
+                }
+
+                int weekOfMonth = date.get(weekFields.weekOfMonth());
+                if (weekOfMonth != weekNumber) {
+                    continue;
+                }
+
+                workingDays++;
+
+                long lateMinutes = Duration.between(LocalTime.of(9, 0), record.getLogIn()).toMinutes() - 10;
+                if (lateMinutes > 0) {
+                    totalLateHours += lateMinutes / 60.0;
+                }
+
+                long earlyDepartureMinutes = Duration.between(record.getLogOut(), LocalTime.of(17, 0)).toMinutes();
+                if (earlyDepartureMinutes > 0) {
+                    totalEarlyDepartureHours += earlyDepartureMinutes / 60.0;
+                }
+
+                double hoursWorked = Duration.between(record.getLogIn(), record.getLogOut()).toMinutes() / 60.0 - 1;
+                double expectedHours = 7;
+
+                if (hoursWorked < expectedHours) {
+                    totalShortHours += expectedHours - hoursWorked;
+                } else if (hoursWorked > expectedHours) {
+                    totalOvertimeHours += hoursWorked - expectedHours;
+                }
+            }
+
+            return new AttendanceReport(year, month, workingDays, totalLateHours,
+                totalEarlyDepartureHours, totalShortHours, totalOvertimeHours);
         }
     }
 
