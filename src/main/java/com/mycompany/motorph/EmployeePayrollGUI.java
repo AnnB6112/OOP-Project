@@ -152,12 +152,18 @@ public class EmployeePayrollGUI extends JFrame {
         manageButton.setForeground(Color.WHITE);
         manageButton.addActionListener(e -> new EmployeeManagementFrame().setVisible(true));
 
+        JButton leaveRequestButton = new JButton("Request Leave");
+        leaveRequestButton.setBackground(new Color(75, 153, 89));
+        leaveRequestButton.setForeground(Color.WHITE);
+        leaveRequestButton.addActionListener(e -> new LeaveRequestFrame().setVisible(true));
+
         form.add(new JLabel("Employee Number:"));
         form.add(employeeNumberField);
         form.add(new JLabel("Employee Name:"));
         form.add(employeeNameField);
         form.add(validateButton);
         form.add(manageButton);
+        form.add(leaveRequestButton);
 
         employeeInfoArea.setEditable(false);
         employeeInfoArea.setLineWrap(true);
@@ -209,6 +215,13 @@ public class EmployeePayrollGUI extends JFrame {
 
     private JPanel createReportsPanel() {
         JPanel panel = basePanel();
+        JLabel title = new JLabel("MONTHLY PAYROLL SUMMARY REPORT");
+        title.setFont(new Font("SansSerif", Font.BOLD, 24));
+
+        DefaultTableModel model = createMonthlyPayrollSummaryModel();
+        JTable table = new JTable(model);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
         JLabel title = new JLabel("Reports");
         title.setFont(new Font("SansSerif", Font.BOLD, 24));
 
@@ -231,6 +244,130 @@ public class EmployeePayrollGUI extends JFrame {
         panel.add(new JScrollPane(table));
 
         return wrapPanel(panel);
+    }
+
+    private DefaultTableModel createMonthlyPayrollSummaryModel() {
+        String[] cols = {
+            "Employee No", "Employee Full Name", "Position", "Department", "Gross Income",
+            "Social Security No.", "Social Security Contribution",
+            "Philhealth No.", "Philhealth Contribution",
+            "Pag-ibig No.", "Pag-ibig Contribution",
+            "TIN", "Withholding Tax", "Net Pay"
+        };
+
+        DefaultTableModel model = new DefaultTableModel(cols, 0);
+        List<Employee> employees = MotorPH.loadEmployees();
+        java.util.Map<Integer, Employee> employeeByNumber = new java.util.HashMap<>();
+        for (Employee employee : employees) {
+            employeeByNumber.put(employee.getEmpNumber(), employee);
+        }
+
+        double totalGross = 0;
+        double totalSss = 0;
+        double totalPhilhealth = 0;
+        double totalPagibig = 0;
+        double totalTax = 0;
+        double totalNet = 0;
+
+        java.text.DecimalFormat money = new java.text.DecimalFormat("#,##0.00");
+
+        try (java.io.InputStream is = getClass().getResourceAsStream("/motorph_employee_data.csv")) {
+            if (is == null) {
+                throw new IOException("Resource not found: /motorph_employee_data.csv");
+            }
+
+            try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(is))) {
+                br.readLine();
+                String line;
+                int added = 0;
+                while ((line = br.readLine()) != null && added < 12) {
+                    String[] data = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+                    if (data.length < 19) {
+                        continue;
+                    }
+
+                    int empNo = Integer.parseInt(data[0].trim());
+                    String fullName = data[1].trim() + ", " + data[2].trim();
+                    String position = data[11].trim();
+                    String department = deriveDepartment(position);
+                    String sssNo = data[6].trim();
+                    String philhealthNo = data[7].trim();
+                    String tin = data[8].trim();
+                    String pagibigNo = data[9].trim();
+
+                    Employee employee = employeeByNumber.get(empNo);
+                    if (employee == null) {
+                        continue;
+                    }
+
+                    double grossIncome = employee.getBasicSalary();
+                    double sssContribution = employee.calculateSSS();
+                    double philhealthContribution = employee.calculatePhilhealth();
+                    double pagibigContribution = employee.calculatePagibig();
+                    double withholdingTax = employee.calculateTax(grossIncome);
+                    double netPay = grossIncome - sssContribution - philhealthContribution - pagibigContribution - withholdingTax;
+
+                    totalGross += grossIncome;
+                    totalSss += sssContribution;
+                    totalPhilhealth += philhealthContribution;
+                    totalPagibig += pagibigContribution;
+                    totalTax += withholdingTax;
+                    totalNet += netPay;
+
+                    model.addRow(new Object[]{
+                        empNo,
+                        fullName,
+                        position,
+                        department,
+                        "₱" + money.format(grossIncome),
+                        sssNo,
+                        "₱" + money.format(sssContribution),
+                        philhealthNo,
+                        "₱" + money.format(philhealthContribution),
+                        pagibigNo,
+                        "₱" + money.format(pagibigContribution),
+                        tin,
+                        "₱" + money.format(withholdingTax),
+                        "₱" + money.format(netPay)
+                    });
+                    added++;
+                }
+            }
+        } catch (IOException | NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this,
+                "Unable to build monthly payroll report: " + ex.getMessage(),
+                "Report Error",
+                JOptionPane.ERROR_MESSAGE);
+        }
+
+        model.addRow(new Object[]{
+            "TOTAL", "", "", "",
+            "₱" + money.format(totalGross),
+            "", "₱" + money.format(totalSss),
+            "", "₱" + money.format(totalPhilhealth),
+            "", "₱" + money.format(totalPagibig),
+            "", "₱" + money.format(totalTax),
+            "₱" + money.format(totalNet)
+        });
+
+        return model;
+    }
+
+    private String deriveDepartment(String position) {
+        String normalized = position.toLowerCase();
+        if (normalized.contains("account") || normalized.contains("finance") || normalized.contains("payroll")) {
+            return "Accounting";
+        }
+        if (normalized.contains("hr")) {
+            return "Human Resources";
+        }
+        if (normalized.contains("it")) {
+            return "IT";
+        }
+        if (normalized.contains("marketing")) {
+            return "Marketing";
+        }
+        return "Operations";
     }
 
     private JPanel createSettingsPanel() {
@@ -356,6 +493,9 @@ public class EmployeePayrollGUI extends JFrame {
 
             StringWriter writer = new StringWriter();
             PrintWriter out = new PrintWriter(writer);
+            String timecardOutput = calculator.generateTimecard(employee, now.getYear(), now.getMonthValue());
+            out.println(timecardOutput);
+            out.println();
             employee.printPayrollSummary(out, week, regularHours, overtimeHours, lateMinutes);
             out.flush();
             payrollOutputArea.setText(writer.toString());
