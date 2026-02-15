@@ -127,12 +127,25 @@ public class EmployeePayrollGUI extends JFrame {
         chartsGrid.setOpaque(false);
         chartsGrid.add(createMonthlyPayrollGraphPanel());
         chartsGrid.add(createAttendancePieChartPanel());
+        JPanel statGrid = new JPanel(new GridLayout(1, 4, 12, 12));
+        statGrid.setOpaque(false);
+        statGrid.add(statCard("Total Employees", "256"));
+        statGrid.add(statCard("Pending Tasks", "28"));
+        statGrid.add(statCard("Pending Approvals", "12"));
+        statGrid.add(statCard("Next Payroll", "Feb 14"));
+
+        JPanel actionGrid = new JPanel(new GridLayout(1, 3, 12, 12));
+        actionGrid.setOpaque(false);
+        actionGrid.add(actionCard("Process Payroll", "Start processing payroll"));
+        actionGrid.add(actionCard("Manage Employees", "View and update employee data"));
+        actionGrid.add(actionCard("View Reports", "Access and download reports"));
 
         panel.add(title);
         panel.add(Box.createVerticalStrut(16));
         panel.add(statGrid);
         panel.add(Box.createVerticalStrut(16));
         panel.add(chartsGrid);
+        panel.add(actionGrid);
 
         return wrapPanel(panel);
     }
@@ -366,6 +379,15 @@ public class EmployeePayrollGUI extends JFrame {
         JTable table = new JTable(model);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
+        JLabel title = new JLabel("Reports");
+        title.setFont(new Font("SansSerif", Font.BOLD, 24));
+
+        String[] cols = {"Pay Period", "Position", "Gross Pay", "Deductions", "Net Pay", "Status"};
+        DefaultTableModel model = new DefaultTableModel(cols, 0);
+        model.addRow(new Object[]{"Feb 2025", "Sales & Marketing", "₱12,631.20", "₱1,530", "₱10,996.63", "Active"});
+        model.addRow(new Object[]{"Feb 2025", "Customer Service", "₱10,678.00", "₱1,000", "₱9,105.50", "Active"});
+
+        JTable table = new JTable(model);
         JButton exportCsv = new JButton("Export to CSV");
         JButton exportPdf = new JButton("Export to PDF");
 
@@ -551,6 +573,23 @@ public class EmployeePayrollGUI extends JFrame {
 
         card.add(labelText, BorderLayout.NORTH);
         card.add(valueText, BorderLayout.CENTER);
+        return card;
+    }
+
+    private JPanel actionCard(String heading, String subtext) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(PRIMARY);
+        card.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+
+        JLabel headingLabel = new JLabel(heading);
+        headingLabel.setForeground(Color.WHITE);
+        headingLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
+
+        JLabel textLabel = new JLabel(subtext);
+        textLabel.setForeground(new Color(230, 236, 255));
+
+        card.add(headingLabel, BorderLayout.NORTH);
+        card.add(textLabel, BorderLayout.CENTER);
         return card;
     }
 

@@ -209,5 +209,43 @@ public abstract class Employee implements Payables {
         out.printf("%-42s %15s%n", "Deductions", "₱" + df.format(totalDeductions));
         out.printf("%-42s %15s%n", "TAKE HOME PAY", "₱" + df.format(netPay));
         out.println("====================================================================");
+        double monthlyGross = basicSalary + riceSubsidy + phoneAllowance + clothingAllowance;
+        double weeklyGross = calculateGrossSalary(regularHours, overtimeHours);
+        double weeklyTax = calculateTax(monthlyGross) / 4;
+        double weeklyDeductions = (weekNumber == 4) ? calculateDeductions() / 4 : 0;
+        double lateDeduction = Math.max(0, lateMinutes - 10) * hourlyRate / 60;
+        double netPay = weeklyGross - weeklyTax - weeklyDeductions - lateDeduction;
+
+        out.println("\n=====================================");
+        out.println("          PAYROLL SUMMARY (Week " + weekNumber + ")");
+        out.println("=====================================");
+        out.println("Pay Period: " + getCurrentPayPeriod());
+        out.println("User Type: " + getUserType());
+        out.println("-------------------------------------");
+        out.println("ALLOWANCES (Weekly):");
+        out.println("  Rice Subsidy: " + df.format(riceSubsidy / 4));
+        out.println("  Phone Allowance: " + df.format(phoneAllowance / 4));
+        out.println("  Clothing Allowance: " + df.format(clothingAllowance / 4));
+        out.println("-------------------------------------");
+        out.println("WEEKLY CALCULATION:");
+        out.println("  Regular Hours: " + regularHours + " @ " + df.format(hourlyRate) + "/hr");
+        out.println("  Overtime Hours: " + overtimeHours + " @ " + df.format(hourlyRate * 1.25) + "/hr");
+        out.println("  Late Minutes: " + lateMinutes + " (after 10min grace)");
+        out.println("  -------------------------------------");
+        out.println("  Weekly Gross Pay: " + df.format(weeklyGross));
+        out.println("-------------------------------------");
+        out.println("DEDUCTIONS:");
+        out.println("  Tax: " + df.format(weeklyTax));
+        if (weekNumber == 4) {
+            out.println("  SSS: " + df.format(calculateSSS() / 4));
+            out.println("  PhilHealth: " + df.format(calculatePhilhealth() / 4));
+            out.println("  Pag-IBIG: " + df.format(calculatePagibig() / 4));
+        }
+        out.println("  Late Deduction: " + df.format(lateDeduction));
+        out.println("  -------------------------------------");
+        out.println("  Total Deductions: " + df.format(weeklyTax + weeklyDeductions + lateDeduction));
+        out.println("-------------------------------------");
+        out.println("NET PAY: " + df.format(netPay));
+        out.println("=====================================");
     }
 }

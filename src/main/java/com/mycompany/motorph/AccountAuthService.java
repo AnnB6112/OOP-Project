@@ -31,6 +31,7 @@ public class AccountAuthService {
     }
 
     private final Map<String, AccountInfo> authorizedAccounts = new HashMap<>();
+    private final Map<String, String> authorizedAccounts = new HashMap<>();
 
     public AccountAuthService() {
         loadAccounts();
@@ -45,6 +46,7 @@ public class AccountAuthService {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
                 br.readLine(); // header
                 String line;
+                String line = br.readLine(); // header
                 while ((line = br.readLine()) != null) {
                     if (line.trim().isEmpty()) continue;
                     String[] parts = line.split(",", -1);
@@ -53,6 +55,7 @@ public class AccountAuthService {
                     String password = parts[1].trim();
                     String role = parts.length >= 3 ? parts[2].trim() : "EMPLOYEE";
                     authorizedAccounts.put(username, new AccountInfo(password, role));
+                    authorizedAccounts.put(parts[0].trim(), parts[1].trim());
                 }
             }
         } catch (IOException ex) {
@@ -71,5 +74,8 @@ public class AccountAuthService {
             return new AuthResult(true, info.role);
         }
         return new AuthResult(false, "");
+        if (username == null || password == null) return false;
+        String storedPassword = authorizedAccounts.get(username.trim());
+        return storedPassword != null && storedPassword.equals(password);
     }
 }
