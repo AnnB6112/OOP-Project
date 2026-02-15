@@ -362,6 +362,9 @@ public class EmployeePayrollGUI extends JFrame {
 
             StringWriter writer = new StringWriter();
             PrintWriter out = new PrintWriter(writer);
+            String timecardOutput = calculator.generateTimecard(employee, now.getYear(), now.getMonthValue());
+            out.println(timecardOutput);
+            out.println();
             employee.printPayrollSummary(out, week, regularHours, overtimeHours, lateMinutes);
             out.flush();
             payrollOutputArea.setText(writer.toString());
