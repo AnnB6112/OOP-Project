@@ -222,6 +222,15 @@ public class EmployeePayrollGUI extends JFrame {
         JTable table = new JTable(model);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
+        JLabel title = new JLabel("Reports");
+        title.setFont(new Font("SansSerif", Font.BOLD, 24));
+
+        String[] cols = {"Pay Period", "Position", "Gross Pay", "Deductions", "Net Pay", "Status"};
+        DefaultTableModel model = new DefaultTableModel(cols, 0);
+        model.addRow(new Object[]{"Feb 2025", "Sales & Marketing", "₱12,631.20", "₱1,530", "₱10,996.63", "Active"});
+        model.addRow(new Object[]{"Feb 2025", "Customer Service", "₱10,678.00", "₱1,000", "₱9,105.50", "Active"});
+
+        JTable table = new JTable(model);
         JButton exportCsv = new JButton("Export to CSV");
         JButton exportPdf = new JButton("Export to PDF");
 
