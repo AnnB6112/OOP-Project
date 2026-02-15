@@ -33,3 +33,7 @@ java -cp out:src/main/resources com.mycompany.motorph.MotorPH
 
 ## ERD
 - See `docs/erd.md` for the normalized relational data model based on the provided ERD diagram.
+
+## Branch Note
+- The active development branch has been renamed/updated to `work`.
+- If you are pulling latest changes, make sure to checkout the `work` branch.
