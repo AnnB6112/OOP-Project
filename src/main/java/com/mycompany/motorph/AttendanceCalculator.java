@@ -10,13 +10,11 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
-import java.time.temporal.WeekFields;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Locale;
 
 public class AttendanceCalculator {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
@@ -196,16 +194,14 @@ public class AttendanceCalculator {
             double totalOvertimeHours = 0;
             int workingDays = 0;
 
-            WeekFields weekFields = WeekFields.of(Locale.getDefault());
-
             for (AttendanceRecord record : records) {
                 LocalDate date = record.getDate();
                 if (date.getYear() != year || date.getMonthValue() != month) {
                     continue;
                 }
 
-                int weekOfMonth = date.get(weekFields.weekOfMonth());
-                if (weekOfMonth != weekNumber) {
+                int payrollWeek = calculatePayrollWeek(date.getDayOfMonth());
+                if (payrollWeek != weekNumber) {
                     continue;
                 }
 
@@ -233,6 +229,19 @@ public class AttendanceCalculator {
 
             return new AttendanceReport(year, month, workingDays, totalLateHours,
                 totalEarlyDepartureHours, totalShortHours, totalOvertimeHours);
+        }
+
+        private int calculatePayrollWeek(int dayOfMonth) {
+            if (dayOfMonth <= 7) {
+                return 1;
+            }
+            if (dayOfMonth <= 14) {
+                return 2;
+            }
+            if (dayOfMonth <= 21) {
+                return 3;
+            }
+            return 4;
         }
     }
 
